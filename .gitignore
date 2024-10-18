@@ -1,0 +1,8 @@
+limsimple/
+Debug/
+Release/
+.vs/
+*.vcxproj
+*.filters
+*.user
+*.sln

@@ -18,6 +18,19 @@ static void limSimpleTest() {
 	}
 }
 
+template<class T>
+void sigmoid(void* p) {
+	T* val = (T*)p;
+	T res = (1 / (1 + exp(-*(val)/300)));
+	*val = res;
+}
+
+template<class T>
+void setToOne(void* p) {
+	T* val = (T*)p;
+	*val = T(1);
+}
+
 int main() {
 	// limSimpleTest();
 	RML::Matrix<double> m = RML::Matrix<double>({6,5,4,3});
@@ -48,7 +61,12 @@ int main() {
 		}
 	}
 
-	//m.set({ 2,2,2,2 }, 5);
+	/*
+	m.set({ 2,2,2,2 }, 5);
+	m.set({ 0,0,0,0 }, 1);
+	m.set({ 1,2,3,1 }, 6);
+	m.set({ 5, 4, 3, 2 }, 10);
+	*/
 
 	double* arr = m.dump();
 	std::vector<double> f = {};
@@ -58,4 +76,11 @@ int main() {
 		}
 		f.push_back(arr[i]);
 	}
+
+	m.apply(&sigmoid<double>);
+	m.apply(&setToOne<double>);
+
+	std::cout << "[";
+	for (int i = 0; i < m.elements(); i++) { std::cout << arr[i] << ", "; }
+	std::cout << "]" << std::endl;
 }

@@ -25,6 +25,13 @@ namespace RML {
 	Setters:
 		m[std::vector<unsigned int> coord] = T k	set the element at this coordinate. Coordinate must lead to an element of type T
 		m.apply(void* rfunct)		apply the function to 
+
+
+	Operations:
+		RML::Matrix::Dot(m, m) should return a new matrix containing the dot product. Should be returned as an a new object
+		RML::Matrix::Mul(m, m) should do the same but for matrix multiplication
+		m*constant should apply the operation *constant to every element.	Same goes for +, -, /.	Can easily use .apply when implemented
+
 */
 
 
@@ -37,12 +44,15 @@ private:
 	T* arr;
 
 	// indexing functionality
-	unsigned int indexCoefficientForPosition(unsigned int idx) {
+	std::vector<unsigned int> indexCoefficientValues;
+	std::vector<unsigned int> calculateIndexCoefficients() {
+		std::vector<unsigned int> values;
 		unsigned int res = 1;
-		for (int i = 0; i < idx; i++) {
+		for (int i = 0; i < dim.size(); i++) {
+			values.push_back(res);
 			res *= dim[i];
 		}
-		return res;
+		return values;
 	}
 
 	unsigned int findCorrespondingIndex(std::vector<unsigned int> idx) {
@@ -56,7 +66,7 @@ private:
 				printf("Given index would attempt to index outside of the array");
 				return -1;
 			}
-			index += idx[i] * indexCoefficientForPosition(i);
+			index += idx[i] * indexCoefficientValues[i];
 		}
 		return index;
 	}
@@ -67,12 +77,26 @@ public:
 		arrSize = 1;
 		for (int i = 0; i < dim.size(); i++) { arrSize *= dim[i]; }
 		arr = new T[arrSize];
+
+		indexCoefficientValues = calculateIndexCoefficients();	// achieves constant look-up and set operations
 	}
 	~Matrix() {
 		delete arr;
 	}
 
 	// Getters
+	T* dump() {
+		return arr;
+	}
+
+	unsigned int elements() {
+		return arrSize;
+	}
+
+	std::vector<unsigned int> size() {
+		return dim;
+	}
+
 	T operator[](std::vector<unsigned int> idx) {
 		unsigned int index = findCorrespondingIndex(idx);
 		return (index != -1) ? arr[index] : T();
@@ -92,8 +116,8 @@ public:
 		for (int i = 0; i < arrSize; i++) { arr[i] = v; }
 	}
 
-	T* dump() {
-		return arr;
+	void apply(void (*f)(void*)) {
+		for (int i = 0; i < arrSize; i++) { f(&arr[i]); }
 	}
 };
 

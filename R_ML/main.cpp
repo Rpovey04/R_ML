@@ -103,11 +103,33 @@ void imageTestWithLimsimple() {
 	delete imgMatrix;
 }
 
+// needs proper testing
+void transposeTest(std::vector<unsigned int> dim) {
+	RML::Matrix<int> m = RML::Matrix<int>(dim);
+	int v = 0;
+	for (int i = 0; i < dim[0]; i++) {
+		for (int j = 0; j < dim[1]; j++) {
+			m.set({ (unsigned int)i, (unsigned int)j }, v++);
+		}
+	}
+
+	m.display2D();
+	m.transpose2D();
+	m.display2D();
+	m.transpose2D();
+	m.display2D();
+}
+
+void expansionTest(std::vector<unsigned int> dim) {
+	
+}
+
 int main() {
 	// limSimpleTest();
 	// uniqueTest({ 1,1,1,1 });
 	// uniqueTest({ 1,2,3,4 });
 	// uniqueTest({ 4,3,2,1 });
+	//transposeTest({10, 5});
 
-	imageTestWithLimsimple();
+	// imageTestWithLimsimple();
 }

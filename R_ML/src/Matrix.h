@@ -24,6 +24,7 @@ namespace RML {
 
 	Setters:
 		m[std::vector<unsigned int> coord] = T k	set the element at this coordinate. Coordinate must lead to an element of type T
+			Array order should be kept sequential if the last element is incremented (I.E {1, 1, 0} should be followed by {1, 1, 1} in arr)
 		m.apply(void* rfunct)		apply the function to 
 
 
@@ -87,11 +88,9 @@ public:
 	static Matrix<T>* fromImage(T* buffer, unsigned int width, unsigned int height, unsigned int channels) {
 		RML::Matrix<T>* m = new RML::Matrix<T>({ width, height, channels });
 		int k = 0;
-		// read image data backwards
 		for (int w = 0; w < width; w++) {
 			for (int h = 0; h < height; h++) {
 				for (int c = 0; c < channels; c++) {
-					// goes through all other dimensions. Array would be ordered
 					m->set({ (unsigned int)w, (unsigned int)h, (unsigned int)c }, buffer[k++]);
 				}
 			}
@@ -103,8 +102,6 @@ public:
 	T* dump() {
 		return arr;
 	}
-
-	// interprets data as if it were input as an image using the dimensions {width, height, channel}
 
 	unsigned int elements() {
 		return arrSize;
@@ -126,9 +123,19 @@ public:
 		// std::cout << "found index: " << index << " when given {" << idx[0] << ", " << idx[1] << ", " << idx[2] << ", " << idx[3] << "}" << std::endl;
 	}
 
+	// NOTE: Order is not preserved after transpose. {a, b} will not be followed by {a, b+1} in the array. However we can achieve constant time by doing this
 	void transpose2D() {
-		std::vector<unsigned int> oldDim = dim;
+		if (dim.size() != 2) {
+			printf("Invalid dimensions, only 2d matrices can be transposed");
+			return;
+		}
 
+		std::vector<unsigned int> oldDim = dim;
+		std::vector<unsigned int> oldCoefficients = indexCoefficientValues;
+		for (int i = 0; i < dim.size(); i++) {		// will only ever be 2 but looks neater
+			dim[i] = oldDim[dim.size() - 1 - i];
+			indexCoefficientValues[i] = oldCoefficients[dim.size() - 1 - i];
+		}
 	}
 
 	void setAll(T v) {
@@ -137,6 +144,18 @@ public:
 
 	void apply(void (*f)(void*)) {
 		for (int i = 0; i < arrSize; i++) { f(&arr[i]); }
+	}
+
+	// DISPLAY, may take out after testing
+	void display2D() {
+		std::cout << "Dimensions: (" << dim[0] << ", " << dim[1] << ")" << std::endl;
+		for (int y = 0; y < dim[1]; y++) {
+			std::cout << "[";
+			for (int x = 0; x < dim[0]; x++) {
+				std::cout << (*this)[{(unsigned int)x, (unsigned int)y}] << ",\t ";
+			}
+			std::cout << "]" << std::endl;
+		}
 	}
 };
 

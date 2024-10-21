@@ -84,10 +84,26 @@ public:
 		delete arr;
 	}
 
+	static Matrix<T>* fromImage(T* buffer, unsigned int width, unsigned int height, unsigned int channels) {
+		RML::Matrix<T>* m = new RML::Matrix<T>({ width, height, channels });
+		int k = 0;
+		// read image data backwards
+		for (int c = 0; c < channels; c++) {
+			for (int h = 0; h < height; h++) {
+				for (int w = 0; w < width; w++) {
+					m->set({ (unsigned int)w, (unsigned int)h, (unsigned int)c }, buffer[k++]);
+				}
+			}
+		}
+		return m;
+	}
+
 	// Getters
 	T* dump() {
 		return arr;
 	}
+
+	// interprets data as if it were input as an image using the dimensions {width, height, channel}
 
 	unsigned int elements() {
 		return arrSize;
@@ -105,11 +121,8 @@ public:
 	// Setters
 	void set(std::vector<unsigned int> idx, T v) {
 		unsigned int index = findCorrespondingIndex(idx);
-		if (index == -1) { return; }
-		
+		if (index != -1) { arr[index] = v; }
 		// std::cout << "found index: " << index << " when given {" << idx[0] << ", " << idx[1] << ", " << idx[2] << "}" << std::endl;
-
-		arr[index] = v;
 	}
 
 	void setAll(T v) {

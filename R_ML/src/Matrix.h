@@ -46,10 +46,10 @@ private:
 	// indexing functionality
 	std::vector<unsigned int> indexCoefficientValues;
 	std::vector<unsigned int> calculateIndexCoefficients() {
-		std::vector<unsigned int> values;
+		std::vector<unsigned int> values(dim.size());
 		unsigned int res = 1;
-		for (int i = 0; i < dim.size(); i++) {
-			values.push_back(res);
+		for (int i = dim.size()-1; i >= 0; i--) {
+			values[i] = res;
 			res *= dim[i];
 		}
 		return values;
@@ -61,7 +61,7 @@ private:
 			return -1;
 		}
 		int index = 0;
-		for (int i = 0; i < dim.size(); i++) {
+		for (int i = dim.size()-1; i >= 0; i--) {
 			if (idx[i] >= dim[i]) {
 				printf("Given index would attempt to index outside of the array");
 				return -1;
@@ -88,9 +88,10 @@ public:
 		RML::Matrix<T>* m = new RML::Matrix<T>({ width, height, channels });
 		int k = 0;
 		// read image data backwards
-		for (int c = 0; c < channels; c++) {
+		for (int w = 0; w < width; w++) {
 			for (int h = 0; h < height; h++) {
-				for (int w = 0; w < width; w++) {
+				for (int c = 0; c < channels; c++) {
+					// goes through all other dimensions. Array would be ordered
 					m->set({ (unsigned int)w, (unsigned int)h, (unsigned int)c }, buffer[k++]);
 				}
 			}
@@ -122,7 +123,12 @@ public:
 	void set(std::vector<unsigned int> idx, T v) {
 		unsigned int index = findCorrespondingIndex(idx);
 		if (index != -1) { arr[index] = v; }
-		// std::cout << "found index: " << index << " when given {" << idx[0] << ", " << idx[1] << ", " << idx[2] << "}" << std::endl;
+		// std::cout << "found index: " << index << " when given {" << idx[0] << ", " << idx[1] << ", " << idx[2] << ", " << idx[3] << "}" << std::endl;
+	}
+
+	void transpose2D() {
+		std::vector<unsigned int> oldDim = dim;
+
 	}
 
 	void setAll(T v) {

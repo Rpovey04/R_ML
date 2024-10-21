@@ -81,6 +81,8 @@ void uniqueTest(std::vector<unsigned int> dim) {
 	std::cout << "[";
 	for (int i = 0; i < m.elements(); i++) { std::cout << arr[i] << ", "; }
 	std::cout << "]" << std::endl;
+
+	std::cout << dim[0] << " " << dim[1] << " " << dim[2] << " " << dim[3] << std::endl;
 }
 
 void imageTestWithLimsimple() {
@@ -104,8 +106,8 @@ void imageTestWithLimsimple() {
 int main() {
 	// limSimpleTest();
 	// uniqueTest({ 1,1,1,1 });
-	uniqueTest({ 1,2,3,4 });
-	uniqueTest({ 4,3,2,1 });
+	// uniqueTest({ 1,2,3,4 });
+	// uniqueTest({ 4,3,2,1 });
 
 	imageTestWithLimsimple();
 }

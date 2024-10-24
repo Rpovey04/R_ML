@@ -114,6 +114,18 @@ public:
 		return m;
 	}
 
+	// returns a four channeled image based on a greyscale matrix
+	static unsigned char* toImageGreyscale(RML::Matrix<T> m) {
+		T* imgData = m.dump();
+		unsigned char* img4Channel = new unsigned char[m.elements() * 4];
+		for (int i = 0; i < m.elements(); i++) {
+			for (int c = 0; c < 4; c++) {
+				img4Channel[i * 4 + c] = (unsigned char)imgData[i];
+			}
+		}
+		return img4Channel;
+	}
+
 	static Matrix<T> identity2D(unsigned int n, T v = T(1)) {	// inclussion of v to allow for faster setup of multiplication
 		Matrix<T> m({ n, n });
 		m.apply([](T* a) {(*a) = T(0); });
@@ -206,6 +218,7 @@ public:
 	}
 	Matrix<T> matmul2D(Matrix<T>& m) {
 		std::vector<unsigned int> mDim = m.size();
+		// APPLY CASE HERE FOR USING A 1D VECTOR. Model as {1, n} or {n, 1} automatically, potentially using a helper function
 		if (dim.size() != 2 || mDim.size() != 2) { 
 			printf("Multiplication must be between two 2D matricies"); 
 			return Matrix<T>({ 0 });

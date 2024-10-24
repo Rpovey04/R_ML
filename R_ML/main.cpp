@@ -1,6 +1,7 @@
 #include <iostream>
 #include "limsimple/Window.h"
 #include "src/Matrix.h"
+#include "datasetHandling/DatasetHandle.h"
 
 static void limSimpleTest() {
 	std::string p1 = "../../../ExampleTexture/00000001_005.jpg";
@@ -87,6 +88,7 @@ void uniqueTest(std::vector<unsigned int> dim) {
 }
 
 void imageTestWithLimsimple() {
+	/*
 	std::string path = "../../ExampleTexture/00000001_005.jpg";
 	int width, height, BPP;
 	unsigned char* tempImgBuffer;
@@ -102,6 +104,42 @@ void imageTestWithLimsimple() {
 	while (!myWindow.shouldClose()) { myWindow.pollOnce(); }
 
 	imgMatrix.clear();
+	*/
+
+	DatasetHandle dh;
+	dh.setTestingPath("D:/Datasets/Final_year/Tumours/Testing");
+	dh.setTrainingPath("D:/Datasets/Final_year/Tumours/Training");
+
+	dh.loadImagesWithLabel("glioma", "glioma");
+	dh.loadImagesWithLabel("meningioma", "meningioma");
+	dh.loadImagesWithLabel("notumor", "notumor");
+	dh.loadImagesWithLabel("pituitary", "pituitary");
+
+	RML::imageFormatting::setDesiredWidth(64);
+	RML::imageFormatting::setDesiredHeight(64);
+	RML::imageFormatting::setGreyscale(1);
+
+	Window myWindow("LimSimple", 256, 256);
+
+	RML::Matrix<double> img({0});
+	unsigned char* imgData;
+	int index = 0;
+	while (!myWindow.shouldClose()) {
+		img = dh.loadTrainingImage<double>("glioma", index);
+		imgData = RML::Matrix<double>::toImageGreyscale(img);
+		myWindow.displayImage(imgData, img.size()[0], img.size()[1], 4);
+
+		myWindow.pollOnce();
+
+		if (index < 1320) { index += 1; }
+		// printf(index);
+
+		if (index % 100 == 0) { std::cout << index << std::endl; }
+
+		img.clear();
+		delete[] imgData;
+	}
+	
 }
 
 // needs proper testing
@@ -198,7 +236,8 @@ int main() {
 	// uniqueTest({ 4,3,2,1 });
 	//transposeTest({10, 5});
 
-	// imageTestWithLimsimple();
+	imageTestWithLimsimple();
 	// addTest();
-	matrixMultiplicationTest();
+	// matrixMultiplicationTest();
+
 }

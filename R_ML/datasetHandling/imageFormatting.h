@@ -6,22 +6,21 @@
 
 #include "../src/Matrix.h"
 
-namespace RML {
-
+template <class T>
 class imageFormatting {
 private:
-	static unsigned int newWidth;
-	static unsigned int newHeight;
-	static bool greyScale;
+	static int vectorAverage(std::vector<unsigned char> v) {
+		int sum = 0;
+		for (int i = 0; i < v.size(); i++) { sum += v[i]; }
+		return sum;
+	}
 
-public:
-	template <class T>
-	static RML::Matrix<T> averageBasedResize(unsigned char* imgSrc, int originalWidth, int originalHeight) {
+	static std::vector<unsigned char>* calculatePixelSums(unsigned char* imgSrc, int originalWidth, int originalHeight, unsigned int newWidth, unsigned int newHeight, bool greyscale) {
 		std::vector<unsigned char>* imgSums;
-		if (greyScale) { imgSums = new std::vector<unsigned char>[newWidth * newHeight]; }
-		else { imgSums = new std::vector<unsigned char>[newWidth * newHeight * 3]; }
-		
-		int oldIndex, newIndex, newX, newY;
+		if (greyscale) { imgSums = new std::vector<unsigned char>[newWidth * newHeight]; }
+		else { imgSums = new std::vector<unsigned char>[newWidth * newHeight * 3]; }	// still ignores alpha channels
+
+		int oldIndex, newIndex, newX, newY, rgbAverage;
 		int hComponent;
 		double currentYRatio;
 		for (int h = 0; h < originalHeight; h++) {
@@ -30,8 +29,9 @@ public:
 				oldIndex = h * originalWidth + w;
 				newX = newWidth * ((double)w / (double)originalWidth);
 				newIndex = newY * newWidth + newX;
-				if (greyScale) {
-					imgSums[newIndex].push_back(imgSrc[oldIndex * 4]);		// rgb average
+				if (greyscale) {
+					rgbAverage = (imgSrc[oldIndex * 4] + imgSrc[oldIndex * 4 + 1] + imgSrc[oldIndex * 4 + 2]) / 3;
+					imgSums[newIndex].push_back((unsigned char)rgbAverage);
 				}
 				else {
 					imgSums[newIndex * 3].push_back(imgSrc[oldIndex * 4]);
@@ -40,47 +40,40 @@ public:
 				}
 			}
 		}
-		// printf("End of sums reached");
 
-		std::vector<unsigned int> newDim = { newWidth, newHeight };
-		if (!greyScale) { newDim.push_back(3); }		// add colour channels
-		RML::Matrix<T> res(newDim);
-		int count = 0;
+		return imgSums;
+	}
+
+	static RML::Matrix<T> takeAverages(std::vector<unsigned char>* pixelSums, unsigned int width, unsigned int height, bool greyscale, std::vector<unsigned int> dim) {
+		RML::Matrix<T> res = RML::Matrix<T>(dim);
+
 		int currentIndex = 0;
-		for (unsigned int w = 0; w < newWidth; w++) {
-			for (unsigned int h = 0; h < newHeight; h++) {
-				count = 0;
-				if (!greyScale) {
-					for (unsigned int c = 0; c < 3; c++) {
-						if (imgSums[currentIndex].size() > 0) {
-							for (int i = 0; i < imgSums[currentIndex].size(); i++) { count += imgSums[currentIndex][i]; }
-						}
-						res.set({ w, h, c }, (T)((double)count / (double)imgSums[currentIndex].size()));
-						currentIndex += 1;
-					}
+		for (unsigned int w = 0; w < width; w++) {
+			for (unsigned int h = 0; h < height; h++) {
+				if (greyscale) {
+					res.set({ w, h }, vectorAverage(pixelSums[currentIndex]));
 				}
 				else {
-					if (imgSums[currentIndex].size() > 0) {
-						for (int i = 0; i < imgSums[currentIndex].size(); i++) { count += imgSums[currentIndex][i]; }
-					}
-					res.set({ w, h }, (T)((double)count / (double)imgSums[currentIndex].size()));
-					currentIndex += 1;
+					res.set({ w, h, 0 }, (T)vectorAverage(pixelSums[currentIndex * 3]));
+					res.set({ w, h, 1 }, (T)vectorAverage(pixelSums[currentIndex * 3 + 1]));
+					res.set({ w, h, 2 }, (T)vectorAverage(pixelSums[currentIndex * 3 + 2]));
 				}
+				currentIndex += 1;
 			}
 		}
-		delete[] imgSums;
+
 		return res;
 	}
 
-	static void setDesiredWidth(int w) { newWidth = w; }
-	static void setDesiredHeight(int w) { newHeight = w; }
-	static void setGreyscale(bool v = 1) { greyScale = v; }
+public:
+	static RML::Matrix<T> averageBasedResize(unsigned char* imgSrc, int originalWidth, int originalHeight, unsigned int newWidth, unsigned int newHeight, bool greyscale) {
+		std::vector<unsigned char>* pixelSums = calculatePixelSums(imgSrc, originalWidth, originalHeight, newWidth, newHeight, greyscale);
+
+		std::vector<unsigned int> newDim = { newWidth, newHeight };
+		if (!greyscale) { newDim.push_back(3); }		// add colour channels
+		RML::Matrix<T> res = takeAverages(pixelSums, newWidth, newHeight, greyscale, newDim);
+
+		delete[] pixelSums;
+		return res;
+	}
 };
-
-unsigned int imageFormatting::newWidth = 0;
-unsigned int imageFormatting::newHeight = 0;
-bool imageFormatting::greyScale = 1;
-
-
-// namespace end
-}

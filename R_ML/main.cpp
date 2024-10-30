@@ -88,45 +88,25 @@ void uniqueTest(std::vector<unsigned int> dim) {
 }
 
 void imageTestWithLimsimple() {
-	/*
-	std::string path = "../../ExampleTexture/00000001_005.jpg";
-	int width, height, BPP;
-	unsigned char* tempImgBuffer;
-	stbi_set_flip_vertically_on_load(1);
-	tempImgBuffer = stbi_load(&path[0], &width, &height, &BPP, 4);
-
-	RML::Matrix<unsigned char> imgMatrix = RML::Matrix<unsigned char>::fromImage(tempImgBuffer, width, height, 4);
-
-	unsigned char* img = imgMatrix.dump();
-
-	Window myWindow("LimSimple", 500, 375);
-	myWindow.displayImage(img, width, height, BPP);
-	while (!myWindow.shouldClose()) { myWindow.pollOnce(); }
-
-	imgMatrix.clear();
-	*/
-
-	DatasetHandle dh;
+	DatasetHandle dh(64, 64, 1);
+	
 	dh.setTestingPath("D:/Datasets/Final_year/Tumours/Testing");
 	dh.setTrainingPath("D:/Datasets/Final_year/Tumours/Training");
-
+	
 	dh.loadImagesWithLabel("glioma", "glioma");
 	dh.loadImagesWithLabel("meningioma", "meningioma");
 	dh.loadImagesWithLabel("notumor", "notumor");
 	dh.loadImagesWithLabel("pituitary", "pituitary");
 
-	RML::imageFormatting::setDesiredWidth(64);
-	RML::imageFormatting::setDesiredHeight(64);
-	RML::imageFormatting::setGreyscale(1);
-
 	Window myWindow("LimSimple", 256, 256);
 
-	RML::Matrix<double> img({0});
+	RML::Matrix<double> img;
 	unsigned char* imgData;
 	int index = 0;
 	while (!myWindow.shouldClose()) {
 		img = dh.loadTrainingImage<double>("glioma", index);
-		imgData = RML::Matrix<double>::toImageGreyscale(img);
+		imgData = RML::Matrix<double>::toImageFromGreyscale(img);
+
 		myWindow.displayImage(imgData, img.size()[0], img.size()[1], 4);
 
 		myWindow.pollOnce();

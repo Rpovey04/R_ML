@@ -88,6 +88,8 @@ private:
 
 public:
 	// Constructors / Destructors
+	Matrix() : dim({0}), arrSize(0)
+	{}
 	Matrix(std::vector<unsigned int> dim) : dim(dim) {
 		arrSize = 1;
 		for (int i = 0; i < dim.size(); i++) { arrSize *= dim[i]; }
@@ -115,7 +117,7 @@ public:
 	}
 
 	// returns a four channeled image based on a greyscale matrix
-	static unsigned char* toImageGreyscale(RML::Matrix<T> m) {
+	static unsigned char* toImageFromGreyscale(RML::Matrix<T> m) {
 		T* imgData = m.dump();
 		unsigned char* img4Channel = new unsigned char[m.elements() * 4];
 		for (int i = 0; i < m.elements(); i++) {

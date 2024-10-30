@@ -13,29 +13,10 @@ NULL
 #endif
 
 namespace RML {
+
 /*
-	--DESIRED INTERFACE--
-	Creation:
-		[DONE] RML::Matrix<T> m = RML::Matrix<T>(std::vector<unsigned int> d)		d = {dim1, dim2, dim3, ...}		 initialises a matrix of all zeros with the given size. Matrix should not have a public initializer, instead relying on zeros as a factory
-	
-	Getters:
-		[DONE, no sub matrix] T k = m[std::vector<unsigned int> coord]	returns the element at that position. If coord does not lead directly to an element, return the corresponding sub-matrix. T should determine this
-		[DONE] m.size()	display the dimensions of the matrix
-
-	Setters:
-		[DONE, USED SET INSTEAD] m[std::vector<unsigned int> coord] = T k	set the element at this coordinate. Coordinate must lead to an element of type T
-			Array order should be kept sequential if the last element is incremented (I.E {1, 1, 0} should be followed by {1, 1, 1} in arr)
-		[DONE] m.apply(void* rfunct)		apply the function to 
-
-
-	Operations:
-		[DONE] RML::Matrix::Dot(m, m) should return a new matrix containing the dot product. Should be returned as an a new object
-		[DONE, matmul] RML::Matrix::Mul(m, m) should do the same but for matrix multiplication
-		m*constant should apply the operation *constant to every element.	Same goes for +, -, /.	Can easily use .apply when implemented
-
+	MAY CHANGE HOW VECTORS WORK
 */
-
-
 
 template<class T>
 class Matrix {
@@ -43,6 +24,8 @@ private:
 	std::vector<unsigned int> dim;
 	unsigned int arrSize;
 	T* arr;
+
+	bool isVector;
 
 	// indexing functionality
 	std::vector<unsigned int> indexCoefficientValues;
@@ -57,7 +40,7 @@ private:
 	}
 
 	unsigned int findCorrespondingIndex(std::vector<unsigned int> idx) {
-		if (idx.size() != dim.size()) {		// dimensions do not match
+		if (idx.size() != dim.size()) {
 			printf("Dimensions of given index does not match the dimensions of the matrix");
 			return -1;
 		}
@@ -90,7 +73,7 @@ public:
 	// Constructors / Destructors
 	Matrix() : dim({0}), arrSize(0)
 	{}
-	Matrix(std::vector<unsigned int> dim) : dim(dim) {
+	Matrix(std::vector<unsigned int> dim, bool v = 0) : dim(dim), isVector(v) {
 		arrSize = 1;
 		for (int i = 0; i < dim.size(); i++) { arrSize *= dim[i]; }
 		arr = new T[arrSize];
@@ -99,7 +82,7 @@ public:
 	}
 	~Matrix() {
 		// chose not to delete the underlying array when object is deleted. This is usually done when the object is passed back, making allocation messy
-		// delete arr;
+		// delete[] arr;
 	}
 
 	// Creation functions: Create a certain mathmatical matrix or load from a datatype
@@ -135,6 +118,10 @@ public:
 		return m;
 	}
 
+	static Matrix<T> vector(unsigned int n) {
+		return RML::Matrix<T>({ n, 1 }, 1);
+	}
+
 	// Getters
 	T* dump() {
 		return arr;
@@ -152,7 +139,6 @@ public:
 		if (m.size().size() == dim.size()) {
 			for (int i = 0; i < dim.size(); i++) {
 				if (m.size()[i] != dim[i]) {
-					printf("Dimensions of two matricies do not match");
 					return 0;
 				}
 			}
@@ -160,13 +146,18 @@ public:
 		return 1;
 	}
 
+	bool isVec() {
+		return isVector;
+	}
+
 	T operator[](std::vector<unsigned int> idx) {
+		if (isVector && idx.size() == 1) { idx.push_back(0); }
 		unsigned int index = findCorrespondingIndex(idx);
 		return (index != -1) ? arr[index] : T();
 	}
 
 	Matrix<T> clone() {
-		Matrix<T> res(dim);
+		Matrix<T> res(dim, isVector);
 		T* resArr = res.dump();
 		for (int i = 0; i < arrSize; i++) {
 			resArr[i] = arr[i];
@@ -218,9 +209,9 @@ public:
 	static T dot(Matrix<T>& m1, Matrix<T>& m2) {
 		return m1.dot(m2);
 	}
+
 	Matrix<T> matmul2D(Matrix<T>& m) {
 		std::vector<unsigned int> mDim = m.size();
-		// APPLY CASE HERE FOR USING A 1D VECTOR. Model as {1, n} or {n, 1} automatically, potentially using a helper function
 		if (dim.size() != 2 || mDim.size() != 2) { 
 			printf("Multiplication must be between two 2D matricies"); 
 			return Matrix<T>({ 0 });
@@ -250,9 +241,9 @@ public:
 
 	// Setters
 	void set(std::vector<unsigned int> idx, T v) {
+		if (isVector && idx.size() == 1) { idx.push_back(0); }
 		unsigned int index = findCorrespondingIndex(idx);
 		if (index != -1) { arr[index] = v; }
-		// std::cout << "found index: " << index << " when given {" << idx[0] << ", " << idx[1] << ", " << idx[2] << ", " << idx[3] << "}" << std::endl;
 	}
 
 	// NOTE: Order is not preserved after transpose. {a, b} will not be followed by {a, b+1} in the array. However we can achieve constant time by doing this

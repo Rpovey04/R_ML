@@ -88,7 +88,7 @@ void uniqueTest(std::vector<unsigned int> dim) {
 }
 
 void imageTestWithLimsimple() {
-	DatasetHandle dh(64, 64, 1);
+	DatasetHandle dh(128, 128, 1);
 	
 	dh.setTestingPath("D:/Datasets/Final_year/Tumours/Testing");
 	dh.setTrainingPath("D:/Datasets/Final_year/Tumours/Training");
@@ -188,24 +188,23 @@ void matrixMultiplicationTest() {
 	m1.set({ 0, 0 }, 1); m1.set({ 0, 1 }, 2); m1.set({ 0, 2 }, 3);
 	m1.set({ 1, 0 }, 4); m1.set({ 1, 1 }, 5); m1.set({ 1, 2 }, 6);
 
-	RML::Matrix<int> m2({ 3, 2 });
-	m2.set({ 0, 0 }, 10); m2.set({ 0, 1 }, 11);
-	m2.set({ 1, 0 }, 20); m2.set({ 1, 1 }, 21);
-	m2.set({ 2, 0 }, 30); m2.set({ 2, 1 }, 31);
+	RML::Matrix<int> v1 = RML::Matrix<int>::vector(3);
+	v1.set({ 0 }, 10); v1.set({ 1 }, 10); v1.set({ 2 }, 10);
 
 	// RML::Matrix<int> id = RML::Matrix<int>::identity2D(m1.size()[1], 2);
-	RML::Matrix<int> id = m1.clone();
-	id.transpose2D();
+	// RML::Matrix<int> id = m1.clone();
+	// id.transpose2D();
 
-	RML::Matrix<int> res = RML::Matrix<int>::matmul2D(m1, id);
+	RML::Matrix<int> res = RML::Matrix<int>::matmul2D(m1, v1);
+	v1.transpose2D();
 
 	m1.display2D();
 	//m2.display2D();
-	id.display2D();
+	v1.display2D();
 	res.display2D();
 
 	m1.clear();
-	m2.clear();
+	v1.clear();
 	res.clear();
 }
 
@@ -216,8 +215,8 @@ int main() {
 	// uniqueTest({ 4,3,2,1 });
 	//transposeTest({10, 5});
 
-	imageTestWithLimsimple();
+	// imageTestWithLimsimple();
 	// addTest();
-	// matrixMultiplicationTest();
+	matrixMultiplicationTest();
 
 }

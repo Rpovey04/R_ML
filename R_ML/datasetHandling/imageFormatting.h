@@ -10,9 +10,11 @@ template <class T>
 class imageFormatting {
 private:
 	static int vectorAverage(std::vector<unsigned char> v) {
+		if (v.size() == 0) { return 0; }
+		
 		int sum = 0;
 		for (int i = 0; i < v.size(); i++) { sum += v[i]; }
-		return sum;
+		return sum/v.size();
 	}
 
 	static std::vector<unsigned char>* calculatePixelSums(unsigned char* imgSrc, int originalWidth, int originalHeight, unsigned int newWidth, unsigned int newHeight, bool greyscale) {

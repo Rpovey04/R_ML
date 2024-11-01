@@ -104,9 +104,10 @@ public:
 		T* imgData = m.dump();
 		unsigned char* img4Channel = new unsigned char[m.elements() * 4];
 		for (int i = 0; i < m.elements(); i++) {
-			for (int c = 0; c < 4; c++) {
+			for (int c = 0; c < 3; c++) {
 				img4Channel[i * 4 + c] = (unsigned char)imgData[i];
 			}
+			img4Channel[i * 4 + 3] = (unsigned char)255;
 		}
 		return img4Channel;
 	}

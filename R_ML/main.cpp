@@ -2,6 +2,7 @@
 #include "limsimple/Window.h"
 #include "src/Matrix.h"
 #include "datasetHandling/DatasetHandle.h"
+#include "datasetHandling/ubyteReader.h"
 
 static void limSimpleTest() {
 	std::string p1 = "../../../ExampleTexture/00000001_005.jpg";
@@ -208,6 +209,34 @@ void matrixMultiplicationTest() {
 	res.clear();
 }
 
+void frontPropTest() {
+	// vector of 60000 images
+	std::vector<unsigned char*> Imgdata = ubyteReader::ToChar(60000, 784, ubyteReader::ExtractData(60000, 784, "D:/Datasets/MNIST/train-images-idx3-ubyte/train-images-idx3-ubyte"), 28, 28);
+	std::vector<RML::Matrix<unsigned char>> inputs;
+	for (int i = 0; i < Imgdata.size(); i++) {
+		inputs.push_back(ubyteReader::toMatrix(Imgdata[i], 28, 28));
+	}
+	std::cout << "Inputs loaded and formatted" << std::endl;
+
+	// labels 0-9
+	std::vector<int> labels = ubyteReader::ExtractLables(60000, "D:/Datasets/MNIST/train-labels-idx1-ubyte/train-labels-idx1-ubyte");
+
+	Window myWindow("LimSimple", 280, 280);
+	unsigned char* currentImg;
+	std::string pause;
+	for (int i = 0; i < 10; i++) {
+		currentImg = RML::Matrix<unsigned char>::toImageFromGreyscale(inputs[i]);
+
+		myWindow.displayImage(currentImg, 28, 28, 4);
+		myWindow.pollOnce();
+
+		std::cout << labels[i] << std::endl;
+		std::cin >> pause;
+
+		delete[] currentImg;
+	}
+}
+
 int main() {
 	// limSimpleTest();
 	// uniqueTest({ 1,1,1,1 });
@@ -217,6 +246,6 @@ int main() {
 
 	// imageTestWithLimsimple();
 	// addTest();
-	matrixMultiplicationTest();
-
+	// matrixMultiplicationTest();
+	frontPropTest();
 }

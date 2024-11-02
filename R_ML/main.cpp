@@ -1,6 +1,8 @@
 #include <iostream>
+#include <time.h>
+
 #include "limsimple/Window.h"
-#include "src/Matrix.h"
+#include "src/NeuralNetwork.h"
 #include "datasetHandling/DatasetHandle.h"
 #include "datasetHandling/ubyteReader.h"
 
@@ -146,41 +148,6 @@ void expansionTest(std::vector<unsigned int> dim) {
 	
 }
 
-void addTest() {
-	RML::Matrix<int> m1 = RML::Matrix<int>({4, 4});
-	RML::Matrix<int> m2 = RML::Matrix<int>({ 4, 4 });
-	int v = 0;
-	std::vector<unsigned int> dim = m1.size();
-	for (int i = 0; i < dim[0]; i++) {
-		for (int j = 0; j < dim[1]; j++) {
-			m1.set({ (unsigned int)i, (unsigned int)j }, v);
-			m2.set({ (unsigned int)i, (unsigned int)j }, 16+ (v++));
-		}
-	}
-
-	m1.display2D();
-	m2.display2D();
-
-	m2.apply(&setToOne<int>);
-
-	RML::Matrix<int> res = m1 + m2;
-	res.display2D();
-
-	res.clear();
-	res = m1 / 2;
-	res.display2D();
-
-	int sum = 0;
-	m1.apply([&sum](int* a) {sum += *a; });
-	std::cout << sum << std::endl;
-	std::cout << m1.dot(m2) << std::endl;
-
-
-	m1.clear();
-	m2.clear();
-	res.clear();
-}
-
 void matrixMultiplicationTest() {
 	// Write more test cases for this
 
@@ -211,6 +178,7 @@ void matrixMultiplicationTest() {
 
 void frontPropTest() {
 	// vector of 60000 images
+	/*
 	std::vector<unsigned char*> Imgdata = ubyteReader::ToChar(60000, 784, ubyteReader::ExtractData(60000, 784, "D:/Datasets/MNIST/train-images-idx3-ubyte/train-images-idx3-ubyte"), 28, 28);
 	std::vector<RML::Matrix<unsigned char>> inputs;
 	for (int i = 0; i < Imgdata.size(); i++) {
@@ -221,6 +189,7 @@ void frontPropTest() {
 	// labels 0-9
 	std::vector<int> labels = ubyteReader::ExtractLables(60000, "D:/Datasets/MNIST/train-labels-idx1-ubyte/train-labels-idx1-ubyte");
 
+	/*
 	Window myWindow("LimSimple", 280, 280);
 	unsigned char* currentImg;
 	std::string pause;
@@ -235,9 +204,26 @@ void frontPropTest() {
 
 		delete[] currentImg;
 	}
+	*/
+
+	// RML::Matrix<double> in = inputs[0].flatten<double>();
+	RML::Matrix<double> in = RML::Matrix<double>({ 784, 1 });
+	in.randomise();
+	in.display();
+
+	RML::DenseLayer<double> *l1, *l2;
+	l1 = new RML::DenseLayer<double>(in.elements(), 20, leakyReLU<double>);
+	l2 = new RML::DenseLayer<double>(20, 2, leakyReLU<double>);
+
+	RML::NeuralNetwork<double> network = RML::NeuralNetwork<double>({ l1, l2 });
+	RML::Matrix<double> res1 = network.forward(in);
+	
+	std::cout << "\nResult: " << std::endl;
+	res1.display();
 }
 
 int main() {
+	srand(time(NULL));
 	// limSimpleTest();
 	// uniqueTest({ 1,1,1,1 });
 	// uniqueTest({ 1,2,3,4 });

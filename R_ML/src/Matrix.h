@@ -1,5 +1,6 @@
 #pragma once
 #include <vector>
+#include <random>
 
 #ifdef _DEBUG
 #include <iostream>
@@ -83,6 +84,13 @@ public:
 	~Matrix() {
 		// chose not to delete the underlying array when object is deleted. This is usually done when the object is passed back, making allocation messy
 		// delete[] arr;
+	}
+
+	template<class newT>		// was useful to flatten inputs and change their type at the same time
+	Matrix<newT> flatten() {
+		RML::Matrix<newT> res = RML::Matrix<newT>({elements(), 1}, 0);
+		for (unsigned int i = 0; i < elements(); i++) { res.set({ i, 0 }, (newT)arr[i]); }
+		return res;
 	}
 
 	// Creation functions: Create a certain mathmatical matrix or load from a datatype
@@ -223,6 +231,7 @@ public:
 		}
 
 		std::vector<unsigned int> resDim = { dim[0], mDim[1] };
+		std::cout << "New matrix created with dimensions: " << dim[0] << ", " << mDim[1] << std::endl;
 		Matrix<T> res(resDim);
 		T sum;
 		for (unsigned int i = 0; i < resDim[0]; i++) {
@@ -262,6 +271,10 @@ public:
 		}
 	}
 
+	void randomise() {		// fills with values between -1 and 1
+		apply([](T* v) {*v = (((double)rand() / (double)RAND_MAX)*2) - 1; });
+	}
+
 	void setAll(T v) {
 		for (int i = 0; i < arrSize; i++) { arr[i] = v; }
 	}
@@ -285,6 +298,12 @@ public:
 			}
 			std::cout << "]" << std::endl;
 		}
+	}
+
+	void display() {
+		std::cout << "[";
+		for (int i = 0; i < arrSize; i++) { std::cout << arr[i] << ", "; }
+		std::cout << "]" << std::endl;
 	}
 
 	// should only be called before the entire array is deleted

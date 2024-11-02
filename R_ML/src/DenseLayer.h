@@ -27,6 +27,7 @@ public:
 			printf("Input vector was either not 1d or was the wrong size");
 			return RML::Matrix<T>({ 0 });
 		}
+
 		w.transpose2D();
 
 		RML::Matrix<T> res = RML::Matrix<T>::matmul2D(w, input);

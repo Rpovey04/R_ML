@@ -19,9 +19,7 @@ public:
 		RML::Matrix<T> newInput = input;
 		RML::Matrix<T> res;
 		for (int i = 0; i < layers.size(); i++) {
-			std::cout << newInput.size()[0] << ", " << newInput.size()[1] << std::endl;
-			res = layers[i]->forward(newInput);
-			res.display();
+			res = layers[i]->forward(newInput);		// will move activation to here, works better for activations that consider the whole set
 
 			newInput.clear();
 			newInput = res;

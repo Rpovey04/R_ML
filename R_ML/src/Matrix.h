@@ -231,7 +231,6 @@ public:
 		}
 
 		std::vector<unsigned int> resDim = { dim[0], mDim[1] };
-		std::cout << "New matrix created with dimensions: " << dim[0] << ", " << mDim[1] << std::endl;
 		Matrix<T> res(resDim);
 		T sum;
 		for (unsigned int i = 0; i < resDim[0]; i++) {

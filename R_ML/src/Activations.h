@@ -1,13 +1,17 @@
 #include "Matrix.h"
+#include <cmath>
 
 template<class T>
-T ReLU(T v) {
-	if (v < 0) { return 0; }
-	else { return v; }
+void ReLU(T* v) {
+	if ((*v) < 0) { (*v) = 0; }
 }
 
 template<class T>
-T leakyReLU(T v) {
-	if (v < 0) { return v / 10; }
-	else { return v; }
+void leakyReLU(T* v) {
+	if ((*v) < 0) { (*v) = (*v) / 10; }
+}
+
+template<class T>
+void sigmoid(T* v) {
+	(*v) = 1 / (1 + std::exp(-(*v)));
 }

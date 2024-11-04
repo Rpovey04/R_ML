@@ -7,21 +7,23 @@ template<class T>
 class DenseLayer : public RML::Layer<T> {
 private:
 	RML::Matrix<double> w;
-	double bias;
+	RML::Matrix<double> bias;
 
 public:
 	DenseLayer()
 	{}
-	DenseLayer(unsigned int inputDim, unsigned int outputDim, T(*a)(T)) {
-		RML::Layer<T>::activation = a;
-		RML::Layer<T>::bias = (((double)rand() / (double)RAND_MAX) * 2) - 1;
+	DenseLayer(unsigned int inputDim, unsigned int outputDim, void(*a)(T*)) {
+		this->activation = a;
 		
 		w = RML::Matrix<double>({ inputDim, outputDim });
 		w.randomise();
+		bias = RML::Matrix<double>({outputDim, 1});
+		bias.randomise();
 	}
 
 	~DenseLayer() {
 		w.clear();
+		bias.clear();
 	}
 
 	RML::Matrix<T> forward(RML::Matrix<T>& input) override {
@@ -33,7 +35,8 @@ public:
 		w.transpose2D();
 
 		RML::Matrix<T> res = RML::Matrix<T>::matmul2D(w, input);
-		res.apply(RML::Layer<T>::activate);
+		res += bias;
+		res.apply(this->activation);
 		
 		w.transpose2D();
 		return res;

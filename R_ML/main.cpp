@@ -209,11 +209,11 @@ void frontPropTest() {
 	// RML::Matrix<double> in = inputs[0].flatten<double>();
 	RML::Matrix<double> in = RML::Matrix<double>({ 784, 1 });
 	in.randomise();
-	in.display();
+	// in.display();
 
 	RML::DenseLayer<double> *l1, *l2;
-	l1 = new RML::DenseLayer<double>(in.elements(), 20, leakyReLU<double>);
-	l2 = new RML::DenseLayer<double>(20, 2, leakyReLU<double>);
+	l1 = new RML::DenseLayer<double>(in.elements(), 20, sigmoid<double>);
+	l2 = new RML::DenseLayer<double>(20, 2, sigmoid<double>);
 
 	RML::NeuralNetwork<double> network = RML::NeuralNetwork<double>({ l1, l2 });
 	RML::Matrix<double> res1 = network.forward(in);

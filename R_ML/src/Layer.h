@@ -6,14 +6,9 @@ namespace RML {
 template<class T>
 class Layer {
 protected:
-	T (*activation)(T);
-	double bias = 0;
+	void (*activation)(T*);
 
 public: 
-	activate(T* val) {
-		T v = (*val);
-		(*val) = activation(v + bias);
-	}
 
 // templates
 	virtual RML::Matrix<T> forward(RML::Matrix<T>& a)

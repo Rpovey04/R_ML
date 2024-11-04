@@ -175,6 +175,26 @@ public:
 	}
 
 	// Mathmatical matrix operations
+	void operator+=(Matrix<T>& m) {
+		if (!sameSize(m)) { printf("Matricies must be the same size to be added together"); }
+		T* marr = m.dump();
+		for (int i = 0; i < arrSize; i++) { arr[i] += marr[i]; }
+	}
+	void operator-=(Matrix<T>& m) {
+		if (!sameSize(m)) { printf("Matricies must be the same size to be subtracted together"); }
+		T* marr = m.dump();
+		for (int i = 0; i < arrSize; i++) { arr[i] -= marr[i]; }
+	}
+	void operator/=(Matrix<T>& m) {
+		if (!sameSize(m)) { printf("Matricies must be the same size to be divided together"); }
+		T* marr = m.dump();
+		for (int i = 0; i < arrSize; i++) { arr[i] /= marr[i]; }
+	}
+	void operator*=(Matrix<T>& m) {
+		if (!sameSize(m)) { printf("Matricies must be the same size to be multiplied together"); }
+		T* marr = m.dump();
+		for (int i = 0; i < arrSize; i++) { arr[i] *= marr[i]; }
+	}
 	Matrix<T> operator+(Matrix<T>& m) {
 		return applyOnCorrespondingMat(m, [](T a, T b) {return a + b; });
 	}

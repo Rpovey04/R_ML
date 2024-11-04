@@ -6,14 +6,16 @@ namespace RML {
 template<class T>
 class DenseLayer : public RML::Layer<T> {
 private:
-	void (*activation)(T*);
 	RML::Matrix<double> w;
+	double bias;
 
 public:
 	DenseLayer()
 	{}
-	DenseLayer(unsigned int inputDim, unsigned int outputDim, void(*a)(T*)) {
-		activation = a;
+	DenseLayer(unsigned int inputDim, unsigned int outputDim, T(*a)(T)) {
+		RML::Layer<T>::activation = a;
+		RML::Layer<T>::bias = (((double)rand() / (double)RAND_MAX) * 2) - 1;
+		
 		w = RML::Matrix<double>({ inputDim, outputDim });
 		w.randomise();
 	}
@@ -31,7 +33,7 @@ public:
 		w.transpose2D();
 
 		RML::Matrix<T> res = RML::Matrix<T>::matmul2D(w, input);
-		res.apply(activation);
+		res.apply(RML::Layer<T>::activate);
 		
 		w.transpose2D();
 		return res;

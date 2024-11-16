@@ -178,7 +178,6 @@ void matrixMultiplicationTest() {
 
 void frontPropTest() {
 	// vector of 60000 images
-	/*
 	std::vector<unsigned char*> Imgdata = ubyteReader::ToChar(60000, 784, ubyteReader::ExtractData(60000, 784, "D:/Datasets/MNIST/train-images-idx3-ubyte/train-images-idx3-ubyte"), 28, 28);
 	std::vector<RML::Matrix<unsigned char>> inputs;
 	for (int i = 0; i < Imgdata.size(); i++) {
@@ -189,7 +188,6 @@ void frontPropTest() {
 	// labels 0-9
 	std::vector<int> labels = ubyteReader::ExtractLables(60000, "D:/Datasets/MNIST/train-labels-idx1-ubyte/train-labels-idx1-ubyte");
 
-	/*
 	Window myWindow("LimSimple", 280, 280);
 	unsigned char* currentImg;
 	std::string pause;
@@ -204,7 +202,6 @@ void frontPropTest() {
 
 		delete[] currentImg;
 	}
-	*/
 
 	// RML::Matrix<double> in = inputs[0].flatten<double>();
 	RML::Matrix<double> in = RML::Matrix<double>({ 784, 1 });
@@ -212,14 +209,12 @@ void frontPropTest() {
 	// in.display();
 
 	RML::DenseLayer<double> *l1, *l2;
-	l1 = new RML::DenseLayer<double>(in.elements(), 20, sigmoid<double>);
-	l2 = new RML::DenseLayer<double>(20, 2, sigmoid<double>);
-
-	RML::NeuralNetwork<double> network = RML::NeuralNetwork<double>({ l1, l2 });
-	RML::Matrix<double> res1 = network.forward(in);
+	l1 = new RML::DenseLayer<double>(in.elements(), 20, sigmoid<double>, sigmoidGrad<double>);
+	l2 = new RML::DenseLayer<double>(20, 2, sigmoid<double>, sigmoidGrad<double>);
+	RML::NeuralNetwork<double> network = RML::NeuralNetwork<double>({ l1, l2 }, 1, 0.1);
 	
-	std::cout << "\nResult: " << std::endl;
-	res1.display();
+	RML::Matrix<double> res1; 
+	std::vector<std::pair<RML::Matrix<double>, RML::Matrix<double>>> grad;
 }
 
 int main() {

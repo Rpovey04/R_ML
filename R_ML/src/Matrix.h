@@ -325,9 +325,22 @@ public:
 		std::cout << "]" << std::endl;
 	}
 
+	void displayDimensions() {
+		std::cout << "Dimensions: ";
+		for (int i = 0; i < dim.size(); i++) {
+			std::cout << dim[i] << ", ";
+		}
+		std::cout << std::endl;
+	}
+
 	// should only be called before the entire array is deleted
 	void clear() {
-		delete[] arr;
+		if (arrSize == 0) {
+			printf("Attempted to clear array with size 0");
+		}
+		else {
+			delete[] arr;
+		}
 	}
 };
 

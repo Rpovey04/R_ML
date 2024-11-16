@@ -15,3 +15,10 @@ template<class T>
 void sigmoid(T* v) {
 	(*v) = 1 / (1 + std::exp(-(*v)));
 }
+
+template<class T>
+void sigmoidGrad(T* v) {
+	T v1 = (*v);
+	sigmoid(&v1);
+	(*v) = v1 * (1 - v1);
+}

@@ -12,9 +12,10 @@ private:
 public:
 	DenseLayer()
 	{}
-	DenseLayer(unsigned int inputDim, unsigned int outputDim, void(*a)(T*)) {
+	DenseLayer(unsigned int inputDim, unsigned int outputDim, void(*a)(T*), void(*aGrad)(T*)) {
 		this->activation = a;
-		
+		this->activationGrad = aGrad;
+
 		w = RML::Matrix<double>({ inputDim, outputDim });
 		w.randomise();
 		bias = RML::Matrix<double>({outputDim, 1});
@@ -36,14 +37,29 @@ public:
 
 		RML::Matrix<T> res = RML::Matrix<T>::matmul2D(w, input);
 		res += bias;
-		res.apply(this->activation);
-		
+
 		w.transpose2D();
 		return res;
 	}
 
-	RML::Matrix<T> backward(RML::Matrix<T>& input) {
+	RML::Matrix<T> backward(RML::Matrix<T>& input) override {		// ended up being done in neural net
 		return RML::Matrix<T>({ 0 });
+	}
+
+	void applyGradients(RML::Matrix<T>& biasGrad, RML::Matrix<T>& weightGrad) override {
+		w += weightGrad;
+		bias += biasGrad;
+	}
+
+	// getters
+	std::vector<unsigned int> getDimensions() override {
+		return w.size();
+	}
+	RML::Matrix <double> getWeights() override {
+		return w;
+	}
+	RML::Matrix<double> getBias() override {
+		return bias;
 	}
 };
 

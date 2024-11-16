@@ -336,7 +336,7 @@ public:
 	// should only be called before the entire array is deleted
 	void clear() {
 		if (arrSize == 0) {
-			printf("Attempted to clear array with size 0");
+			// printf("Attempted to clear array with size 0");
 		}
 		else {
 			delete[] arr;

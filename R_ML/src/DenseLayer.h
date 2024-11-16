@@ -47,8 +47,8 @@ public:
 	}
 
 	void applyGradients(RML::Matrix<T>& biasGrad, RML::Matrix<T>& weightGrad) override {
-		w += weightGrad;
-		bias += biasGrad;
+		w -= weightGrad;
+		bias -= biasGrad;
 	}
 
 	// getters

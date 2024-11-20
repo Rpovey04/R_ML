@@ -41,11 +41,6 @@ public:
 		w.transpose2D();
 		return res;
 	}
-
-	RML::Matrix<T> backward(RML::Matrix<T>& input) override {		// ended up being done in neural net
-		return RML::Matrix<T>({ 0 });
-	}
-
 	void applyGradients(RML::Matrix<T>& biasGrad, RML::Matrix<T>& weightGrad) override {
 		w -= weightGrad;
 		bias -= biasGrad;

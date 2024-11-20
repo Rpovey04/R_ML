@@ -16,10 +16,6 @@ public:
 	{
 		return RML::Matrix<T>({ 0 });
 	}
-	virtual RML::Matrix<T> backward(RML::Matrix<T>& a)
-	{
-		return RML::Matrix<T>({ 0 });
-	}
 	virtual void applyGradients(RML::Matrix<T>& biasGrad, RML::Matrix<T>& weightGrad) 
 	{}
 

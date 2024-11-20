@@ -180,25 +180,11 @@ RML::Matrix<double> calculateLoss(RML::Matrix<double> pred, int y) {
 	RML::Matrix<double> loss = RML::Matrix<double>({ 10, 1 });
 	double v = 0;
 	for (unsigned int i = 0; i < 10; i++) {
-		if (i == (unsigned int)y) { v = pred[{i, 0}] - 1; }		// reward for high confidence
-		else { v = pred[{i, 0}]; }					
-		loss.set({ i, 0 }, v);
+		if (i == (unsigned int)y) { v = 1 - pred[{i, 0}]; }
+		else { v = pred[{i, 0}]; }		
+		loss.set({ i, 0 }, v*2);
 	}
 	return loss;
-}
-
-void updateRunningGrad(std::vector<std::pair<RML::Matrix<double>, RML::Matrix<double>>> grad, std::vector<std::pair<RML::Matrix<double>, RML::Matrix<double>>> running) {
-	for (int i = 0; i < running.size(); i++) {
-		running[i].first += grad[i].first;
-		running[i].second += grad[i].second;
-	}
-}
-
-void resetRunningGrad(std::vector<std::pair<RML::Matrix<double>, RML::Matrix<double>>> grad) {
-	for (int i = 0; i < grad.size(); i++) {
-		grad[i].first.apply([](double* v) {(*v) = 0; });
-		grad[i].second.apply([](double* v) {(*v) = 0; });
-	}
 }
 
 int outputToPred(RML::Matrix<double> output) {
@@ -214,6 +200,10 @@ int outputToPred(RML::Matrix<double> output) {
 }
 
 void frontPropTest() {
+	/*
+		THIS MODEL ACHIEVES AVERAGE ACCURACY OF 73%
+	*/
+
 	// vector of 60000 images
 	std::vector<unsigned char*> Imgdata = ubyteReader::ToChar(60000, 784, ubyteReader::ExtractData(60000, 784, "D:/Datasets/MNIST/train-images-idx3-ubyte/train-images-idx3-ubyte"), 28, 28);
 	std::vector<RML::Matrix<unsigned char>> inputs;
@@ -225,89 +215,73 @@ void frontPropTest() {
 	// labels 0-9
 	std::vector<int> labels = ubyteReader::ExtractLables(60000, "D:/Datasets/MNIST/train-labels-idx1-ubyte/train-labels-idx1-ubyte");
 	
+	// Model definition
 	RML::Matrix<double> in = inputs[0].flatten<double>();
 	RML::DenseLayer<double>* l1, * l2, * l3, * l4;
 	l1 = new RML::DenseLayer<double>(in.elements(), 60, sigmoid<double>, sigmoidGrad<double>);
 	l3 = new RML::DenseLayer<double>(60, 28, sigmoid<double>, sigmoidGrad<double>);
 	l4 = new RML::DenseLayer<double>(28, 10, sigmoid<double>, sigmoidGrad<double>);
-	RML::NeuralNetwork<double> network = RML::NeuralNetwork<double>({ l1, l3, l4 }, 1, 1);
-
-	RML::Matrix<double> pred, loss;
-	std::vector<std::pair<RML::Matrix<double>, RML::Matrix<double>>> grad, runningGrad;
-	int correct;
+	RML::NeuralNetwork<double> network = RML::NeuralNetwork<double>({ l1, l3, l4 }, 1, 0.5);
 
 	// training
-	int egs = 5000;
-	for (int i = 0; i < egs; i++) {
-		if (i % 500 == 0) {
-			std::cout << ((double)i / (double)egs)*100.0f << "%" << std::endl;
-		}
+	int egs = 10000;
+	int epochs = 1;
+	int total = 0;
+	int numCorrect = 0;
+	int interval = 10;
 
-		// label and input from training data
-		in = inputs[i].flatten<double>();
-		correct = labels[i];
+	std::vector<RML::Matrix<double>> currentInputs;
+	std::vector<int> currentLabels;
 
-		// calculate prediciton and loss
-		pred = network.forward(in);
-		loss = calculateLoss(pred, correct);
+	for (int e = 0; e < epochs; e++) {
+		std::cout << "Epoch: " << e << std::endl;
+		for (int i = 0; i < egs; i++) {
+			if (i % 500 == 0) {
+				std::cout << ((double)i / (double)egs) * 100.0f << "%" << std::endl;
+			}
 
-		// calculate gradient
-		grad = network.backward(loss);
-		if (i == 0) { 
-			runningGrad = grad; 
-			resetRunningGrad(runningGrad);
-		}		// cheating
-		
-		// add gradient to running gradient (and delete gradient)
-		updateRunningGrad(grad, runningGrad);
-		if (i != 0) {
-			for (int i = 0; i < grad.size(); i++) {
-				grad[i].first.clear();
-				grad[i].second.clear();
+			currentInputs.push_back(inputs[i].flatten<double>());
+			currentLabels.push_back(labels[i]);
+
+			if (i % interval == 0 && i > 0) {
+				network.runGradientDescent<int>(currentInputs, currentLabels, calculateLoss);
+				while (!currentInputs.empty()) {		// empty input vector
+					currentInputs[currentInputs.size() - 1].clear();
+					currentInputs.pop_back();
+				}
+				currentLabels.clear();
 			}
 		}
-
-		// after 10 runs, add average gradient to network
-		if (i % 20 == 0) {
-			for (int i = 0; i < runningGrad.size(); i++) {
-				runningGrad[i].first.apply([](double* v) {(*v) /= 20.0f; });
-				runningGrad[i].second.apply([](double* v) {(*v) /= 20.0f; });
-			}
-			// runningGrad[2].first.display();
-			// runningGrad[2].second.display();
-			network.applyGradients(runningGrad);
-			resetRunningGrad(runningGrad);
-		}
-
-		in.clear();
-		pred.clear();
-		loss.clear();
 	}
 
 	// testing
 	unsigned char* currentImg;
 	Window myWindow("LimSimple", 280, 280);
 	std::string pause;
-	int correct1 = 0;
-	int total = 0;
+	total = 0;
+	numCorrect = 0;
 
-	for (int i = 10000; i < 11000; i++) {
+	RML::Matrix<double> pred;
+	for (int i = 55000; i < 60000; i++) {
 		currentImg = RML::Matrix<unsigned char>::toImageFromGreyscale(inputs[i]);
 		myWindow.displayImage(currentImg, 28, 28, 4);
 		myWindow.pollOnce();
-		// std::cout << labels[i] << std::endl;
-		
 		in = inputs[i].flatten<double>();
 		pred = network.forward(in);
-		// pred.display();
-		// std::cout << "Pred: " << outputToPred(pred) << std::endl;
+		
 
 		total += 1;
-		if (outputToPred(pred) == labels[i]) { correct1 += 1; }
+		if (outputToPred(pred) == labels[i]) { numCorrect += 1; }
 		if (i % 100 == 0) {
-			std::cout << "running accuracy: " << (double)correct1 / (double)total << std::endl;
+			std::cout << "running accuracy: " << (double)numCorrect / (double)total << std::endl;
 		}
-		// std::cin >> pause;
+
+		/*
+		std::cout << "Pred: " << outputToPred(pred) << "\tReal: " << labels[i] << std::endl;	
+		/*
+		std::cin >> pause;
+		*/
+		
 
 		in.clear();
 		pred.clear();
@@ -315,50 +289,7 @@ void frontPropTest() {
 	}
 }
 
-void trainingTest() {
-	RML::Matrix<double> in = RML::Matrix<double>({ 784, 1 });
-	in.randomise();
-	RML::DenseLayer<double>* l1, * l2, * l3, * l4;
-	l1 = new RML::DenseLayer<double>(in.elements(), 80, sigmoid<double>, sigmoidGrad<double>);
-	l2 = new RML::DenseLayer<double>(80, 60, sigmoid<double>, sigmoidGrad<double>);
-	l3 = new RML::DenseLayer<double>(60, 28, sigmoid<double>, sigmoidGrad<double>);
-	l4 = new RML::DenseLayer<double>(28, 10, sigmoid<double>, sigmoidGrad<double>);
-	RML::NeuralNetwork<double> network = RML::NeuralNetwork<double>({ l1, l2, l3, l4 }, 1, 0.1);
-
-	RML::Matrix<double> pred, loss;
-	std::vector<std::pair<RML::Matrix<double>, RML::Matrix<double>>> grad;
-	for (int i = 0; i < 60000; i++) {
-		in = RML::Matrix<double>({ 784, 1 });
-		in.randomise();
-
-		pred = network.forward(in);
-		loss = calculateLoss(pred, 5);
-		grad = network.backward(loss);
-		network.applyGradients(grad);
-
-		if (i % 500 == 0) {
-			std::cout << outputToPred(pred) << std::endl;
-			pred.display();
-		}
-
-		in.clear();
-		pred.clear();
-		loss.clear();
-		grad.clear();
-	}
-}
-
 int main() {
 	srand(time(NULL));
-	// limSimpleTest();
-	// uniqueTest({ 1,1,1,1 });
-	// uniqueTest({ 1,2,3,4 });
-	// uniqueTest({ 4,3,2,1 });
-	//transposeTest({10, 5});
-
-	// imageTestWithLimsimple();
-	// addTest();
-	// matrixMultiplicationTest();
 	frontPropTest();
-	// trainingTest();
 }

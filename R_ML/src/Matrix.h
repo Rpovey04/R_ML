@@ -195,6 +195,18 @@ public:
 		T* marr = m.dump();
 		for (int i = 0; i < arrSize; i++) { arr[i] *= marr[i]; }
 	}
+	void operator+=(T v) {
+		for (int i = 0; i < arrSize; i++) { arr[i] += v; }
+	}
+	void operator-=(T v) {
+		for (int i = 0; i < arrSize; i++) { arr[i] -= v; }
+	}
+	void operator/=(T v) {
+		for (int i = 0; i < arrSize; i++) { arr[i] /= v; }
+	}
+	void operator*=(T v) {
+		for (int i = 0; i < arrSize; i++) { arr[i] *= v; }
+	}
 	Matrix<T> operator+(Matrix<T>& m) {
 		return applyOnCorrespondingMat(m, [](T a, T b) {return a + b; });
 	}

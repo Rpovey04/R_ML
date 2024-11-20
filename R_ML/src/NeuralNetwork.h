@@ -13,19 +13,37 @@ private:
 	std::vector<RML::Matrix<T>> cachedActivations;
 
 	double learningRate;
+	int gradientCount;
+	std::vector<std::pair<RML::Matrix<double>, RML::Matrix<double>>> runningGradient;		// formatted as <biasGradient, weightGradient> pairs
+	
 public:
 	NeuralNetwork() {}
-	NeuralNetwork(std::vector<RML::Layer<T>*> l, bool cache = 1, double lr=0.1) : layers(l), shouldCache(cache), learningRate(lr) {
+	NeuralNetwork(std::vector<RML::Layer<T>*> l, bool cache = 1, double lr = 0.1) : layers(l), shouldCache(cache), learningRate(lr) {
 		nLayers = layers.size();
 		for (int i = 0; i < nLayers + 1; i++) {
 			cachedSums.push_back(RML::Matrix<T>());		// cachedSums[0] will always be empty
 			cachedActivations.push_back(RML::Matrix<T>());
+		}
+
+		gradientCount = 0;
+		RML::Matrix<double> currentWeightGrad, currentBiasGrad;
+		for (int i = 0; i < nLayers; i++) {
+			currentWeightGrad = RML::Matrix<double>(l[i]->getDimensions());
+			currentWeightGrad.apply([](double* v) {(*v) = 0; });
+			currentBiasGrad = RML::Matrix<double>({ l[i]->getDimensions()[1], 1 });
+			currentBiasGrad.apply([](double* v) {(*v) = 0; });
+			runningGradient.push_back(std::pair<RML::Matrix<double>, RML::Matrix<double>>(currentBiasGrad, currentWeightGrad));
 		}
 	}
 	~NeuralNetwork() {
 		for (int i = 0; i < nLayers + 1; i++) {
 			cachedSums[i].clear();
 			cachedActivations[i].clear();
+
+			if (i < nLayers) {
+				runningGradient[i].first.clear();
+				runningGradient[i].second.clear();
+			}
 		}
 	}
 
@@ -57,6 +75,7 @@ public:
 		}
 		return res;
 	}
+
 
 	std::vector<std::pair<RML::Matrix<double>, RML::Matrix<double>>> backward(RML::Matrix<T> cost) {	// returns vector of {bias gradients, weight gradients}
 		if (!shouldCache) {
@@ -91,37 +110,57 @@ public:
 
 			costGradient.clear();
 			costGradient = layers[l]->getWeights().matmul2D(biasGrad);
-
-			/*
-			std::cout << "l: " << l << std::endl;
-			std::cout << "cost: " << std::endl;
-			costGradient.displayDimensions();
-			std::cout << "sum: " << std::endl;
-			sumGradient.displayDimensions();
-			std::cout << "activation: " << std::endl;
-			activationGradient.displayDimensions();
-			std::cout << "weights: " << std::endl;
-			layers[l]->getWeights().displayDimensions();
-			std::cout << "weight gradients: " << std::endl;
-			weightGrad.displayDimensions();
-			std::cout << "bias: " << std::endl;
-			layers[l]->getBias().displayDimensions();
-			std::cout << "bias gradients: " << std::endl;
-			biasGrad.displayDimensions();
-			std::cout << "\n\n" << std::endl;
-			*/
 		}
 		costGradient.clear();
 		return gradients;
 	}
 
-	void applyGradients(std::vector<std::pair<RML::Matrix<double>, RML::Matrix<double>>> gradients) {
-		double lr = learningRate;
+	void addRunningGradients(std::vector<std::pair<RML::Matrix<double>, RML::Matrix<double>>> gradient, bool clear = 1) {
 		for (int l = 0; l < nLayers; l++) {
-			gradients[l].first.apply([lr](T* v) {(*v) *= lr; });
-			gradients[l].second.apply([lr](T* v) {(*v) *= lr; });
-			layers[l]->applyGradients(gradients[l].first, gradients[l].second);
+			runningGradient[l].first += gradient[l].first;
+			runningGradient[l].second += gradient[l].second;
+			if (clear) {
+				gradient[l].first.clear();
+				gradient[l].second.clear();
+			}
 		}
+
+		gradientCount += 1;
+	}
+	
+	void applyRunningGradients() {
+		if (gradientCount == 0) {
+			printf("No running gradient to apply");
+			return;
+		}
+
+		double coefficient = learningRate / gradientCount;
+		for (int l = 0; l < nLayers; l++) {
+			runningGradient[l].first *= coefficient;
+			runningGradient[l].second *= coefficient;
+			layers[l]->applyGradients(runningGradient[l].first, runningGradient[l].second);
+
+			// set back to zero
+			runningGradient[l].first.apply([](double* v) {(*v) = 0; });
+			runningGradient[l].second.apply([](double* v) {(*v) = 0; });
+		}
+		gradientCount = 0;
+	}
+
+	template<typename T1>
+	void runGradientDescent(std::vector<RML::Matrix<T>> inputs, std::vector<T1> desiredOutputs, RML::Matrix<T>(*costFunctionGrad)(RML::Matrix<T>, T1)) {
+		RML::Matrix<T> pred, loss;
+		std::vector<std::pair<RML::Matrix<double>, RML::Matrix<double>>> grad;
+		for (int i = 0; i < inputs.size(); i++) {
+			pred = this->forward(inputs[i]);
+			loss = costFunctionGrad(pred, desiredOutputs[i]);
+			grad = this->backward(loss);
+			this->addRunningGradients(grad, 1);
+
+			pred.clear();
+			loss.clear();
+		}
+		this->applyRunningGradients();
 	}
 };
 

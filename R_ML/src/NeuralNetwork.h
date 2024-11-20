@@ -102,6 +102,7 @@ public:
 
 			biasGrad = activationGradient * costGradient;
 			
+			// Still need to check if this is the same calculation I used in my last project but I'm fairly sure it is
 			biasGrad.transpose2D();
 			weightGrad = sumGradient.matmul2D(biasGrad);			
 			biasGrad.transpose2D();
@@ -148,19 +149,26 @@ public:
 	}
 
 	template<typename T1>
-	void runGradientDescent(std::vector<RML::Matrix<T>> inputs, std::vector<T1> desiredOutputs, RML::Matrix<T>(*costFunctionGrad)(RML::Matrix<T>, T1)) {
+	int runGradientDescent(std::vector<RML::Matrix<T>> inputs, std::vector<T1> desiredOutputs, RML::Matrix<T>(*costFunctionGrad)(RML::Matrix<T>, T1), int(*checkFunction)(RML::Matrix<T>, T1) = nullptr) {
 		RML::Matrix<T> pred, loss;
 		std::vector<std::pair<RML::Matrix<double>, RML::Matrix<double>>> grad;
+		int correct = 0;
+		
 		for (int i = 0; i < inputs.size(); i++) {
 			pred = this->forward(inputs[i]);
 			loss = costFunctionGrad(pred, desiredOutputs[i]);
 			grad = this->backward(loss);
 			this->addRunningGradients(grad, 1);
 
+			if (checkFunction != nullptr) {
+				correct += checkFunction(pred, desiredOutputs[i]);
+			}
+
 			pred.clear();
 			loss.clear();
 		}
 		this->applyRunningGradients();
+		return correct;
 	}
 };
 

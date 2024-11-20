@@ -180,11 +180,23 @@ RML::Matrix<double> calculateLoss(RML::Matrix<double> pred, int y) {
 	RML::Matrix<double> loss = RML::Matrix<double>({ 10, 1 });
 	double v = 0;
 	for (unsigned int i = 0; i < 10; i++) {
-		if (i == (unsigned int)y) { v = 1 - pred[{i, 0}]; }
+		if (i == (unsigned int)y) { v = pred[{i, 0}] - 1; }
 		else { v = pred[{i, 0}]; }		
 		loss.set({ i, 0 }, v*2);
 	}
 	return loss;
+}
+
+int isCorrect(RML::Matrix<double> pred, int y) {
+	double max = 0;
+	int chosen = -1;
+	for (unsigned int i = 0; i < 10; i++) {
+		if (pred[{i, 0}] >= max) {
+			chosen = i;
+			max = pred[{i, 0}];
+		}
+	}
+	return chosen == y;
 }
 
 int outputToPred(RML::Matrix<double> output) {
@@ -201,7 +213,7 @@ int outputToPred(RML::Matrix<double> output) {
 
 void frontPropTest() {
 	/*
-		THIS MODEL ACHIEVES AVERAGE ACCURACY OF 73%
+		THIS MODEL ACHIEVES AVERAGE ACCURACY OF 71.7%
 	*/
 
 	// vector of 60000 images
@@ -221,10 +233,10 @@ void frontPropTest() {
 	l1 = new RML::DenseLayer<double>(in.elements(), 60, sigmoid<double>, sigmoidGrad<double>);
 	l3 = new RML::DenseLayer<double>(60, 28, sigmoid<double>, sigmoidGrad<double>);
 	l4 = new RML::DenseLayer<double>(28, 10, sigmoid<double>, sigmoidGrad<double>);
-	RML::NeuralNetwork<double> network = RML::NeuralNetwork<double>({ l1, l3, l4 }, 1, 0.5);
+	RML::NeuralNetwork<double> network = RML::NeuralNetwork<double>({ l1, l3, l4 }, 1, 0.1);
 
 	// training
-	int egs = 10000;
+	int egs = 55000;
 	int epochs = 1;
 	int total = 0;
 	int numCorrect = 0;
@@ -238,13 +250,16 @@ void frontPropTest() {
 		for (int i = 0; i < egs; i++) {
 			if (i % 500 == 0) {
 				std::cout << ((double)i / (double)egs) * 100.0f << "%" << std::endl;
+				std::cout << "interval accuracy: " << (double)numCorrect / (double)total << std::endl;
+				numCorrect = 0; total = 0;
 			}
 
 			currentInputs.push_back(inputs[i].flatten<double>());
 			currentLabels.push_back(labels[i]);
+			total += 1;
 
 			if (i % interval == 0 && i > 0) {
-				network.runGradientDescent<int>(currentInputs, currentLabels, calculateLoss);
+				numCorrect += network.runGradientDescent<int>(currentInputs, currentLabels, calculateLoss, isCorrect);
 				while (!currentInputs.empty()) {		// empty input vector
 					currentInputs[currentInputs.size() - 1].clear();
 					currentInputs.pop_back();

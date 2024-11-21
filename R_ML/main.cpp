@@ -306,5 +306,6 @@ void frontPropTest() {
 
 int main() {
 	srand(time(NULL));
-	frontPropTest();
+	// frontPropTest();
+	imageTestWithLimsimple();
 }

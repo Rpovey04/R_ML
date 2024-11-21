@@ -106,8 +106,13 @@ public:
         return newVec;
     }
 
-    static RML::Matrix<unsigned char> toMatrix(unsigned char* imgData, int w, int h) {
-        RML::Matrix<unsigned char> res = RML::Matrix<unsigned char>({ (unsigned int)w, (unsigned int)h });
+    static 
+        
+        
+        
+        
+        Matrix<unsigned char> toMatrix(unsigned char* imgData, int w, int h) {
+        Matrix<unsigned char> res = Matrix<unsigned char>({ (unsigned int)w, (unsigned int)h });
         int index = 0;
         for (unsigned int i = 0; i < w; i++) {
             for (unsigned int j = 0; j < h; j++) {

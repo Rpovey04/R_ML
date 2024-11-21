@@ -13,8 +13,6 @@ std::cout<< x << std::endl
 NULL
 #endif
 
-namespace RML {
-
 /*
 	MAY CHANGE HOW VECTORS WORK
 */
@@ -88,14 +86,14 @@ public:
 
 	template<class newT>		// was useful to flatten inputs and change their type at the same time
 	Matrix<newT> flatten() {
-		RML::Matrix<newT> res = RML::Matrix<newT>({elements(), 1}, 0);
+		Matrix<newT> res = Matrix<newT>({elements(), 1}, 0);
 		for (unsigned int i = 0; i < elements(); i++) { res.set({ i, 0 }, (newT)arr[i]); }
 		return res;
 	}
 
 	// Creation functions: Create a certain mathmatical matrix or load from a datatype
 	static Matrix<T> fromImage(T* buffer, unsigned int width, unsigned int height, unsigned int channels) {
-		RML::Matrix<T> m({ width, height, channels });
+		Matrix<T> m({ width, height, channels });
 		int k = 0;
 		for (int w = 0; w < width; w++) {
 			for (int h = 0; h < height; h++) {
@@ -108,7 +106,7 @@ public:
 	}
 
 	// returns a four channeled image based on a greyscale matrix
-	static unsigned char* toImageFromGreyscale(RML::Matrix<T> m) {
+	static unsigned char* toImageFromGreyscale(Matrix<T> m) {
 		T* imgData = m.dump();
 		unsigned char* img4Channel = new unsigned char[m.elements() * 4];
 		for (int i = 0; i < m.elements(); i++) {
@@ -128,7 +126,7 @@ public:
 	}
 
 	static Matrix<T> vector(unsigned int n) {
-		return RML::Matrix<T>({ n, 1 }, 1);
+		return Matrix<T>({ n, 1 }, 1);
 	}
 
 	// Getters
@@ -355,6 +353,3 @@ public:
 		}
 	}
 };
-
-// END FOR NAMESPACE
-}

@@ -68,15 +68,15 @@ private:
 	}
 
 	template <class T>
-	static RML::Matrix<T> loadImage(std::string label, int i, std::unordered_map<std::string, std::vector<std::string>> map, std::string basePath, unsigned int width, unsigned int height, bool greyScale) {
+	static Matrix<T> loadImage(std::string label, int i, std::unordered_map<std::string, std::vector<std::string>> map, std::string basePath, unsigned int width, unsigned int height, bool greyScale) {
 		auto elem = map.find(label);
 		if (elem == map.end()) {
 			printf("No data loaded with given label");
-			return RML::Matrix<T>();
+			return Matrix<T>();
 		}
 		if (i >= elem->second.size()) {
 			printf("i is out of range for given label");
-			return RML::Matrix<T>();
+			return Matrix<T>();
 		}
 
 		std::string path = basePath + "/" + label + "/" + elem->second[i];
@@ -84,7 +84,12 @@ private:
 		int w, h;
 		unsigned char* tempImgBuffer = stbi_load(&path[0], &w, &h, nullptr, 4);
 
-		RML::Matrix<T> res = imageFormatting<T>::averageBasedResize(tempImgBuffer, w, h, width, height, greyScale);
+		
+		
+		
+		
+		
+		Matrix<T> res = imageFormatting<T>::averageBasedResize(tempImgBuffer, w, h, width, height, greyScale);
 
 		delete[] tempImgBuffer;
 		return res;
@@ -111,11 +116,11 @@ public:
 
 	// load a new image (only loads 3 channels, alpha channel is ignored)
 	template <class T>
-	RML::Matrix<T> loadTrainingImage(std::string label, int i) {
+	Matrix<T> loadTrainingImage(std::string label, int i) {
 		return loadImage<T>(label, i, trainingMap, trainingPath, editWidth, editHeight, greyscale);
 	}
 	template <class T>
-	RML::Matrix<T> loadTestingImage(std::string label, int i) {
+	Matrix<T> loadTestingImage(std::string label, int i) {
 		return loadImage<T>(label, i, testingMap, testingPath, editWidth, editHeight, greyscale);
 	}
 

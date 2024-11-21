@@ -1,8 +1,6 @@
 #pragma once
 # include "Activations.h"
 
-namespace RML {
-
 template<class T>
 class Layer {
 protected:
@@ -12,11 +10,11 @@ protected:
 public:
 
 	// templates
-	virtual RML::Matrix<T> forward(RML::Matrix<T>& a)		// returns the sum of the previous weights and input but does not apply activation
+	virtual Matrix<T> forward(Matrix<T>& a)		// returns the sum of the previous weights and input but does not apply activation
 	{
-		return RML::Matrix<T>({ 0 });
+		return Matrix<T>({ 0 });
 	}
-	virtual void applyGradients(RML::Matrix<T>& biasGrad, RML::Matrix<T>& weightGrad) 
+	virtual void applyGradients(Matrix<T>& biasGrad, Matrix<T>& weightGrad) 
 	{}
 
 	// getters
@@ -24,13 +22,13 @@ public:
 	{
 		return { 0 };
 	}
-	virtual RML::Matrix<double> getWeights()
+	virtual Matrix<double> getWeights()
 	{
-		return RML::Matrix<double>({ 0 });
+		return Matrix<double>({ 0 });
 	}
-	virtual RML::Matrix<double> getBias()
+	virtual Matrix<double> getBias()
 	{
-		return RML::Matrix<double>({ 0 });
+		return Matrix<double>({ 0 });
 	}
 
 	void (*getActivation())(T*) {
@@ -40,5 +38,4 @@ public:
 		return activationGrad;
 	}
 
-};
 };

@@ -1,13 +1,11 @@
 #include "Layer.h"
 
 
-namespace RML {
-
 template<class T>
-class DenseLayer : public RML::Layer<T> {
+class DenseLayer : public Layer<T> {
 private:
-	RML::Matrix<double> w;
-	RML::Matrix<double> bias;
+	Matrix<double> w;
+	Matrix<double> bias;
 
 public:
 	DenseLayer()
@@ -16,9 +14,9 @@ public:
 		this->activation = a;
 		this->activationGrad = aGrad;
 
-		w = RML::Matrix<double>({ inputDim, outputDim });
+		w = Matrix<double>({ inputDim, outputDim });
 		w.randomise();
-		bias = RML::Matrix<double>({outputDim, 1});
+		bias = Matrix<double>({outputDim, 1});
 		bias.randomise();
 	}
 
@@ -27,21 +25,21 @@ public:
 		bias.clear();
 	}
 
-	RML::Matrix<T> forward(RML::Matrix<T>& input) override {
+	Matrix<T> forward(Matrix<T>& input) override {
 		if (input.size().size() != 2 || input.size()[1] != 1 || input.size()[0] != w.size()[0]) {		// crude
 			printf("Input vector was either not 1d or was the wrong size");
-			return RML::Matrix<T>({ 0 });
+			return Matrix<T>({ 0 });
 		}
 
 		w.transpose2D();
 
-		RML::Matrix<T> res = RML::Matrix<T>::matmul2D(w, input);
+		Matrix<T> res = Matrix<T>::matmul2D(w, input);
 		res += bias;
 
 		w.transpose2D();
 		return res;
 	}
-	void applyGradients(RML::Matrix<T>& biasGrad, RML::Matrix<T>& weightGrad) override {
+	void applyGradients(Matrix<T>& biasGrad, Matrix<T>& weightGrad) override {
 		w -= weightGrad;
 		bias -= biasGrad;
 	}
@@ -50,13 +48,10 @@ public:
 	std::vector<unsigned int> getDimensions() override {
 		return w.size();
 	}
-	RML::Matrix <double> getWeights() override {
+	Matrix <double> getWeights() override {
 		return w;
 	}
-	RML::Matrix<double> getBias() override {
+	Matrix<double> getBias() override {
 		return bias;
 	}
-};
-
-
 };

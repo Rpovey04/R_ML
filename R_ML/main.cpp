@@ -37,7 +37,7 @@ void setToOne(void* p) {
 
 
 void uniqueTest(std::vector<unsigned int> dim) {
-	RML::Matrix<double> m = RML::Matrix<double>(dim);
+	Matrix<double> m = Matrix<double>(dim);
 	// testing for unqiue holding
 	int v = 0;
 	for (int i = 0; i < dim[0]; i++) {
@@ -103,12 +103,12 @@ void imageTestWithLimsimple() {
 
 	Window myWindow("LimSimple", 256, 256);
 
-	RML::Matrix<double> img;
+	Matrix<double> img;
 	unsigned char* imgData;
 	int index = 0;
 	while (!myWindow.shouldClose()) {
 		img = dh.loadTrainingImage<double>("glioma", index);
-		imgData = RML::Matrix<double>::toImageFromGreyscale(img);
+		imgData = Matrix<double>::toImageFromGreyscale(img);
 
 		myWindow.displayImage(imgData, img.size()[0], img.size()[1], 4);
 
@@ -127,7 +127,7 @@ void imageTestWithLimsimple() {
 
 // needs proper testing
 void transposeTest(std::vector<unsigned int> dim) {
-	RML::Matrix<int> m = RML::Matrix<int>(dim);
+	Matrix<int> m = Matrix<int>(dim);
 	int v = 0;
 	for (int i = 0; i < dim[0]; i++) {
 		for (int j = 0; j < dim[1]; j++) {
@@ -152,18 +152,18 @@ void matrixMultiplicationTest() {
 	// Write more test cases for this
 
 
-	RML::Matrix<int> m1({ 2, 3 });
+	Matrix<int> m1({ 2, 3 });
 	m1.set({ 0, 0 }, 1); m1.set({ 0, 1 }, 2); m1.set({ 0, 2 }, 3);
 	m1.set({ 1, 0 }, 4); m1.set({ 1, 1 }, 5); m1.set({ 1, 2 }, 6);
 
-	RML::Matrix<int> v1 = RML::Matrix<int>::vector(3);
+	Matrix<int> v1 = Matrix<int>::vector(3);
 	v1.set({ 0 }, 10); v1.set({ 1 }, 10); v1.set({ 2 }, 10);
 
-	// RML::Matrix<int> id = RML::Matrix<int>::identity2D(m1.size()[1], 2);
-	// RML::Matrix<int> id = m1.clone();
+	// Matrix<int> id = Matrix<int>::identity2D(m1.size()[1], 2);
+	// Matrix<int> id = m1.clone();
 	// id.transpose2D();
 
-	RML::Matrix<int> res = RML::Matrix<int>::matmul2D(m1, v1);
+	Matrix<int> res = Matrix<int>::matmul2D(m1, v1);
 	v1.transpose2D();
 
 	m1.display2D();
@@ -176,8 +176,8 @@ void matrixMultiplicationTest() {
 	res.clear();
 }
 
-RML::Matrix<double> calculateLoss(RML::Matrix<double> pred, int y) {
-	RML::Matrix<double> loss = RML::Matrix<double>({ 10, 1 });
+Matrix<double> calculateLoss(Matrix<double> pred, int y) {
+	Matrix<double> loss = Matrix<double>({ 10, 1 });
 	double v = 0;
 	for (unsigned int i = 0; i < 10; i++) {
 		if (i == (unsigned int)y) { v = pred[{i, 0}] - 1; }
@@ -187,7 +187,7 @@ RML::Matrix<double> calculateLoss(RML::Matrix<double> pred, int y) {
 	return loss;
 }
 
-int isCorrect(RML::Matrix<double> pred, int y) {
+int isCorrect(Matrix<double> pred, int y) {
 	double max = 0;
 	int chosen = -1;
 	for (unsigned int i = 0; i < 10; i++) {
@@ -199,7 +199,7 @@ int isCorrect(RML::Matrix<double> pred, int y) {
 	return chosen == y;
 }
 
-int outputToPred(RML::Matrix<double> output) {
+int outputToPred(Matrix<double> output) {
 	double max = 0;
 	int chosen = -1;
 	for (unsigned int i = 0; i < 10; i++) {
@@ -218,7 +218,7 @@ void frontPropTest() {
 
 	// vector of 60000 images
 	std::vector<unsigned char*> Imgdata = ubyteReader::ToChar(60000, 784, ubyteReader::ExtractData(60000, 784, "D:/Datasets/MNIST/train-images-idx3-ubyte/train-images-idx3-ubyte"), 28, 28);
-	std::vector<RML::Matrix<unsigned char>> inputs;
+	std::vector<Matrix<unsigned char>> inputs;
 	for (int i = 0; i < Imgdata.size(); i++) {
 		inputs.push_back(ubyteReader::toMatrix(Imgdata[i], 28, 28));
 	}
@@ -228,12 +228,12 @@ void frontPropTest() {
 	std::vector<int> labels = ubyteReader::ExtractLables(60000, "D:/Datasets/MNIST/train-labels-idx1-ubyte/train-labels-idx1-ubyte");
 	
 	// Model definition
-	RML::Matrix<double> in = inputs[0].flatten<double>();
-	RML::DenseLayer<double>* l1, * l2, * l3, * l4;
-	l1 = new RML::DenseLayer<double>(in.elements(), 60, sigmoid<double>, sigmoidGrad<double>);
-	l3 = new RML::DenseLayer<double>(60, 28, sigmoid<double>, sigmoidGrad<double>);
-	l4 = new RML::DenseLayer<double>(28, 10, sigmoid<double>, sigmoidGrad<double>);
-	RML::NeuralNetwork<double> network = RML::NeuralNetwork<double>({ l1, l3, l4 }, 1, 0.1);
+	Matrix<double> in = inputs[0].flatten<double>();
+	DenseLayer<double>* l1, * l2, * l3, * l4;
+	l1 = new DenseLayer<double>(in.elements(), 60, sigmoid<double>, sigmoidGrad<double>);
+	l3 = new DenseLayer<double>(60, 28, sigmoid<double>, sigmoidGrad<double>);
+	l4 = new DenseLayer<double>(28, 10, sigmoid<double>, sigmoidGrad<double>);
+	NeuralNetwork<double> network = NeuralNetwork<double>({ l1, l3, l4 }, 1, 0.1);
 
 	// training
 	int egs = 55000;
@@ -242,7 +242,7 @@ void frontPropTest() {
 	int numCorrect = 0;
 	int interval = 10;
 
-	std::vector<RML::Matrix<double>> currentInputs;
+	std::vector<Matrix<double>> currentInputs;
 	std::vector<int> currentLabels;
 
 	for (int e = 0; e < epochs; e++) {
@@ -276,9 +276,9 @@ void frontPropTest() {
 	total = 0;
 	numCorrect = 0;
 
-	RML::Matrix<double> pred;
+	Matrix<double> pred;
 	for (int i = 55000; i < 60000; i++) {
-		currentImg = RML::Matrix<unsigned char>::toImageFromGreyscale(inputs[i]);
+		currentImg = Matrix<unsigned char>::toImageFromGreyscale(inputs[i]);
 		myWindow.displayImage(currentImg, 28, 28, 4);
 		myWindow.pollOnce();
 		in = inputs[i].flatten<double>();
@@ -306,6 +306,6 @@ void frontPropTest() {
 
 int main() {
 	srand(time(NULL));
-	// frontPropTest();
+	frontPropTest();
 	imageTestWithLimsimple();
 }
